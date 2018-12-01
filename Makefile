@@ -116,7 +116,7 @@ endif
 OBJECTS := libretro-test.o
 OBJECTS +=  libcommon/audio_mixer.o libcommon/rwav.o libcommon/memalign.o \
         libcommon/audio_resampler.o libcommon/sinc_resampler.o \
-        libcommon/features_cpu.o libcommon/compat_strl.o \
+        libcommon/features_cpu.o libcommon/compat_strl.o libcommon/deps/ibxm.o \
 
 
 
