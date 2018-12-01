@@ -116,11 +116,11 @@ endif
 OBJECTS := libretro-test.o
 OBJECTS +=  libcommon/audio_mixer.o libcommon/rwav.o libcommon/memalign.o \
         libcommon/audio_resampler.o libcommon/sinc_resampler.o \
-        libcommon/features_cpu.o libcommon/compat_strl.o libcommon/deps/ibxm.o \
+        libcommon/features_cpu.o libcommon/compat_strl.o deps/ibxm.o \
 
 
 
-CFLAGS += -I$(LIBRETRO_COMM_DIR)/include -Wall -pedantic $(fpic)
+CFLAGS += -I$(LIBRETRO_COMM_DIR)/include -Ideps -Wall -pedantic $(fpic)
 
 ifneq (,$(findstring qnx,$(platform)))
 CFLAGS += -Wc,-std=c99
