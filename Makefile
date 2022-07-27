@@ -30,7 +30,7 @@ else ifneq ($(findstring MINGW,$(shell uname -a)),)
 	system_platform = win
 endif
 
-TARGET_NAME := testaudio_playback_wav
+TARGET_NAME := test
 LIBM		= -lm
 
 ifeq ($(ARCHFLAGS),)
@@ -101,24 +101,15 @@ else ifeq ($(platform), vita)
 else
    CC = gcc
    TARGET := $(TARGET_NAME)_libretro.dll
-   SHARED := -shared -static-libgcc -static-libstdc++ -s -Wl,--version-script=link.T -Wl,--no-undefined
+   SHARED := -shared -static-libgcc -static-libstdc++ -Wl,--version-script=link.T -Wl,--no-undefined
 endif
 
 LDFLAGS += $(LIBM)
-
-ifeq ($(DEBUG), 1)
-   LDFLAGS += -g
-   CFLAGS += -O0 -g
-else
-   LDFLAGS += -g
-   CFLAGS += -O0 -g
-endif
+CFLAGS += -O0 -g -DDEBUG
 OBJECTS := libretro-test.o
 OBJECTS +=  libcommon/audio_mixer.o libcommon/rwav.o libcommon/memalign.o \
         libcommon/audio_resampler.o libcommon/sinc_resampler.o \
         libcommon/features_cpu.o libcommon/compat_strl.o deps/ibxm.o \
-
-
 
 CFLAGS += -I$(LIBRETRO_COMM_DIR)/include -Ideps -Wall -pedantic $(fpic)
 
@@ -134,11 +125,11 @@ $(TARGET): $(OBJECTS)
 ifeq ($(STATIC_LINKING), 1)
 	$(AR) rcs $@ $(OBJECTS) $(LDFLAGS)
 else
-	$(CC) $(fpic) $(SHARED) $(INCLUDES) -o $@ $(OBJECTS) $(LDFLAGS)
+	$(CC) $(CFLAGS) $(fpic) $(SHARED) $(INCLUDES) -o $@ $(OBJECTS) $(LDFLAGS)
 endif
 
 %.o: %.c
-	$(CC) $(CFLAGS) $(fpic) -c -o $@ $< -g
+	$(CC) $(CFLAGS) $(fpic) -c -o $@ $<
 
 clean:
 	rm -f $(OBJECTS) $(TARGET)
