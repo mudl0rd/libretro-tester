@@ -1,4 +1,4 @@
-/* Copyright  (C) 2010-2018 The RetroArch team
+/* Copyright  (C) 2010-2020 The RetroArch team
  *
  * ---------------------------------------------------------------------------------------
  * The following license statement only applies to this file (dir_list.h).
@@ -24,10 +24,28 @@
 #define __LIBRETRO_SDK_DIR_LIST_H
 
 #include <retro_common_api.h>
+#include <boolean.h>
 
 #include <lists/string_list.h>
 
 RETRO_BEGIN_DECLS
+
+/**
+ * dir_list_append:
+ * @list               : existing list to append to.
+ * @dir                : directory path.
+ * @ext                : allowed extensions of file directory entries to include.
+ * @include_dirs       : include directories as part of the finished directory listing?
+ * @include_hidden     : include hidden files and directories as part of the finished directory listing?
+ * @include_compressed : Only include files which match ext. Do not try to match compressed files, etc.
+ * @recursive          : list directory contents recursively
+ *
+ * Create a directory listing, appending to an existing list
+ *
+ * @return Returns true on success, otherwise false.
+ **/
+bool dir_list_append(struct string_list *list, const char *dir, const char *ext,
+      bool include_dirs, bool include_hidden, bool include_compressed, bool recursive);
 
 /**
  * dir_list_new:
@@ -40,11 +58,23 @@ RETRO_BEGIN_DECLS
  *
  * Create a directory listing.
  *
- * Returns: pointer to a directory listing of type 'struct string_list *' on success,
+ * @return pointer to a directory listing of type 'struct string_list *' on success,
  * NULL in case of error. Has to be freed manually.
  **/
 struct string_list *dir_list_new(const char *dir, const char *ext,
       bool include_dirs, bool include_hidden, bool include_compressed, bool recursive);
+
+/**
+ * dir_list_initialize:
+ *
+ * NOTE: @list must zero initialised before
+ * calling this function, otherwise UB.
+ **/
+bool dir_list_initialize(struct string_list *list,
+      const char *dir,
+      const char *ext, bool include_dirs,
+      bool include_hidden, bool include_compressed,
+      bool recursive);
 
 /**
  * dir_list_sort:
@@ -52,7 +82,6 @@ struct string_list *dir_list_new(const char *dir, const char *ext,
  * @dir_first : move the directories in the listing to the top?
  *
  * Sorts a directory listing.
- *
  **/
 void dir_list_sort(struct string_list *list, bool dir_first);
 
@@ -61,9 +90,10 @@ void dir_list_sort(struct string_list *list, bool dir_first);
  * @list : pointer to the directory listing
  *
  * Frees a directory listing.
- *
  **/
 void dir_list_free(struct string_list *list);
+
+bool dir_list_deinitialize(struct string_list *list);
 
 RETRO_END_DECLS
 

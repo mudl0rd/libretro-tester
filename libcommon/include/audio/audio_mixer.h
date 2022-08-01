@@ -1,4 +1,4 @@
-/* Copyright  (C) 2010-2018 The RetroArch team
+/* Copyright  (C) 2010-2020 The RetroArch team
  *
  * ---------------------------------------------------------------------------------------
  * The following license statement only applies to this file (audio_mixer.h).
@@ -34,6 +34,8 @@
 #include <boolean.h>
 #include <retro_common_api.h>
 
+#include <audio/audio_resampler.h>
+
 RETRO_BEGIN_DECLS
 
 enum audio_mixer_type
@@ -41,7 +43,9 @@ enum audio_mixer_type
    AUDIO_MIXER_TYPE_NONE = 0,
    AUDIO_MIXER_TYPE_WAV,
    AUDIO_MIXER_TYPE_OGG,
-   AUDIO_MIXER_TYPE_MOD
+   AUDIO_MIXER_TYPE_MOD,
+   AUDIO_MIXER_TYPE_FLAC,
+   AUDIO_MIXER_TYPE_MP3
 };
 
 typedef struct audio_mixer_sound audio_mixer_sound_t;
@@ -58,16 +62,26 @@ void audio_mixer_init(unsigned rate);
 
 void audio_mixer_done(void);
 
-audio_mixer_sound_t* audio_mixer_load_wav(void *buffer, int32_t size);
+audio_mixer_sound_t* audio_mixer_load_wav(void *buffer, int32_t size,
+      const char *resampler_ident, enum resampler_quality quality);
 audio_mixer_sound_t* audio_mixer_load_ogg(void *buffer, int32_t size);
 audio_mixer_sound_t* audio_mixer_load_mod(void *buffer, int32_t size);
+audio_mixer_sound_t* audio_mixer_load_flac(void *buffer, int32_t size);
+audio_mixer_sound_t* audio_mixer_load_mp3(void *buffer, int32_t size);
 
 void audio_mixer_destroy(audio_mixer_sound_t* sound);
 
 audio_mixer_voice_t* audio_mixer_play(audio_mixer_sound_t* sound,
-      bool repeat, float volume, audio_mixer_stop_cb_t stop_cb);
+      bool repeat, float volume,
+      const char *resampler_ident,
+      enum resampler_quality quality,
+      audio_mixer_stop_cb_t stop_cb);
 
 void audio_mixer_stop(audio_mixer_voice_t* voice);
+
+float audio_mixer_voice_get_volume(audio_mixer_voice_t *voice);
+
+void audio_mixer_voice_set_volume(audio_mixer_voice_t *voice, float val);
 
 void audio_mixer_mix(float* buffer, size_t num_frames, float volume_override, bool override);
 

@@ -90,7 +90,7 @@ EXPORT void retro_init(void)
 
 EXPORT void retro_get_system_info(struct retro_system_info *info)
 {
-   const struct retro_system_info myinfo = {"WAV player", "v1", "wav", false, false};
+   const struct retro_system_info myinfo = {"libretro test", "v1", "wav|s3m|mod|xm|flac|ogg|mp3", true, false};
    memcpy(info, &myinfo, sizeof(myinfo));
 }
 
@@ -181,6 +181,15 @@ EXPORT bool retro_unserialize(const void *data, size_t size)
 
    return true;
 }
+char *buffer = NULL;
+
+const char *get_filename_ext(const char *filename)
+{
+   const char *dot = strrchr(filename, '.');
+   if (!dot || dot == filename)
+      return "";
+   return dot + 1;
+}
 
 EXPORT bool retro_load_game(const struct retro_game_info *game)
 {
@@ -188,8 +197,38 @@ EXPORT bool retro_load_game(const struct retro_game_info *game)
 
    if (!environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &rgb565))
       return false;
-   wavfile = audio_mixer_load_wav(game->data, game->size);
-   voice1 = audio_mixer_play(wavfile, true, 1.0, NULL);
+
+   FILE *pFile;
+   long lSize;
+   size_t result;
+   pFile = fopen(game->path, "rb");
+   if (pFile == NULL)
+      return false;
+   // obtain file size:
+   fseek(pFile, 0, SEEK_END);
+   lSize = ftell(pFile);
+   rewind(pFile);
+   // allocate memory to contain the whole file:
+   buffer = (char *)malloc(sizeof(char) * lSize);
+   // copy the file into the buffer:
+   result = fread(buffer, 1, lSize, pFile);
+   /* the whole file is now loaded in the memory buffer. */
+   // terminate
+   fclose(pFile);
+
+   char *ext = get_filename_ext(game->path);
+
+   if (strcmp("wav", ext) == 0)
+      wavfile = audio_mixer_load_wav(buffer, lSize, NULL, RESAMPLER_QUALITY_DONTCARE);
+   else if (strcmp("mp3", ext) == 0)
+      wavfile = audio_mixer_load_mp3(buffer, lSize);
+   else if (strcmp("ogg", ext) == 0)
+      wavfile = audio_mixer_load_ogg(buffer, lSize);
+   else if (strcmp("flac", ext) == 0)
+      wavfile = audio_mixer_load_flac(buffer, lSize);
+   else
+      wavfile = audio_mixer_load_mod(buffer, lSize);
+   voice1 = audio_mixer_play(wavfile, true, 1.0, NULL, RESAMPLER_QUALITY_DONTCARE, NULL);
    return true;
 }
 
@@ -204,6 +243,8 @@ EXPORT void retro_unload_game(void)
    audio_mixer_stop(voice1);
    audio_mixer_destroy(wavfile);
    audio_mixer_done();
+   if (buffer)
+      free(buffer);
 }
 
 EXPORT unsigned retro_get_region(void)
