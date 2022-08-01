@@ -109,7 +109,7 @@ CFLAGS += -O0 -g -DDEBUG
 OBJECTS := libretro-test.o
 OBJECTS +=  libcommon/audio_mixer.o libcommon/rwav.o libcommon/memalign.o \
         libcommon/audio_resampler.o libcommon/sinc_resampler.o \
-        libcommon/features_cpu.o libcommon/compat_strl.o deps/ibxm.o \
+        libcommon/features_cpu.o libcommon/compat_strl.o deps/ibxm/ibxm.o \
 
 CFLAGS += -I$(LIBRETRO_COMM_DIR)/include -Ideps -Wall -pedantic $(fpic)
 
