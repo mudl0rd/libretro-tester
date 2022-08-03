@@ -1,0 +1,15 @@
+INCFLAGS += \
+	-I$(COMMON_FLZ)/include \
+	-Ideps
+
+SOURCES_C = \
+    $(COMMON_FLZ)/audio_mixer.c \
+    $(COMMON_FLZ)/rwav.c \
+    $(COMMON_FLZ)/memalign.c \
+    $(COMMON_FLZ)/audio_resampler.c \
+    $(COMMON_FLZ)/sinc_resampler.c \
+    $(COMMON_FLZ)/features_cpu.c \
+    $(COMMON_FLZ)/compat_strl.c \
+    deps/ibxm/ibxm.c 
+
+SOURCES_CXX = libretro-test.cpp
