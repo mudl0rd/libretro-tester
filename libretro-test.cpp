@@ -192,6 +192,27 @@ const char *get_filename_ext(const char *filename)
    return dot + 1;
 }
 
+
+audio_mixer_sound_t* audio_mixer_wav(void *buffer, int32_t size)
+{
+   return audio_mixer_load_wav(buffer, size, NULL, RESAMPLER_QUALITY_DONTCARE);
+}
+
+typedef struct func_t {
+    char * ext;
+    audio_mixer_sound_t* (* func)(void *buffer, int32_t size);
+} aud_mix;
+
+func_t mix[7] = {
+   "wav",audio_mixer_wav,
+   "mp3", audio_mixer_load_mp3,
+   "ogg",audio_mixer_load_ogg,
+   "flac",audio_mixer_load_flac,
+   "mod",audio_mixer_load_mod,
+   "s3m",audio_mixer_load_mod,
+   "xm",audio_mixer_load_mod
+};
+
 EXPORT bool retro_load_game(const struct retro_game_info *game)
 {
    enum retro_pixel_format rgb565 = RETRO_PIXEL_FORMAT_XRGB8888;
@@ -219,16 +240,20 @@ EXPORT bool retro_load_game(const struct retro_game_info *game)
 
    const char *ext = get_filename_ext(game->path);
 
-   if (strcmp("wav", ext) == 0)
-      wavfile = audio_mixer_load_wav(buffer, lSize, NULL, RESAMPLER_QUALITY_DONTCARE);
-   else if (strcmp("mp3", ext) == 0)
-      wavfile = audio_mixer_load_mp3(buffer, lSize);
-   else if (strcmp("ogg", ext) == 0)
-      wavfile = audio_mixer_load_ogg(buffer, lSize);
-   else if (strcmp("flac", ext) == 0)
-      wavfile = audio_mixer_load_flac(buffer, lSize);
-   else
-      wavfile = audio_mixer_load_mod(buffer, lSize);
+   for (int i=0;i<7;i++)
+   {
+    if(strcmp(ext,mix[i].ext)==0)
+    {
+      wavfile = mix[i].func(buffer,lSize);
+      break;
+    }
+    
+   }
+   if(!wavfile){
+      free(buffer);
+      return false;
+   }
+   
    voice1 = audio_mixer_play(wavfile, true, 1.0, NULL, RESAMPLER_QUALITY_DONTCARE, NULL);
    return true;
 }
@@ -244,8 +269,6 @@ EXPORT void retro_unload_game(void)
    audio_mixer_stop(voice1);
    audio_mixer_destroy(wavfile);
    audio_mixer_done();
-   if (buffer)
-      free(buffer);
 }
 
 EXPORT unsigned retro_get_region(void)
