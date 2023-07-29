@@ -60,9 +60,90 @@ EXPORT void retro_set_input_state(retro_input_state_t cb)
    input_state_cb = cb;
 }
 
+static const struct retro_variable var_mrboom_teammode    = { "mrboom-teammode", "Team mode; Selfie|Color|Sex|Skynet" };
+static const struct retro_variable var_mrboom_nomonster   = { "mrboom-nomonster", "Monsters; ON|OFF" };
+static const struct retro_variable var_mrboom_levelselect = { "mrboom-levelselect", "Level select; Normal|Candy|Penguins|Pink|Jungle|Board|Soccer|Sky|Aliens|Random" };
+static const struct retro_variable var_mrboom_aspect      = { "mrboom-aspect", "Aspect ratio; Native|4:3|16:9" };
+static const struct retro_variable var_mrboom_musicvolume = { "mrboom-musicvolume", "Music volume; 100|0|5|10|15|20|25|30|35|40|45|50|55|60|65|70|75|80|85|90|95" };
+static const struct retro_variable var_mrboom_sfxvolume   = { "mrboom-sfxvolume", "Sfx volume; 50|55|60|65|70|75|80|85|90|95|100|0|5|10|15|20|25|30|35|40|45" };
+static const struct retro_variable var_empty = { NULL, NULL };
+
+
+struct retro_core_option_v2_category option_cats_us[] = {
+   {
+      "hacks",
+      "Hacks",
+      "Configure bullshit which you REALLy shouldn't care about."
+   },
+   {
+      "shit_hacks",
+      "Other Hacks",
+      "Configure other bits of bullshit."
+   },
+   { NULL, NULL, NULL },
+};
+
+struct retro_core_option_v2_category none[] = {
+{ NULL, NULL, NULL },
+};
+
+struct retro_core_option_v2_definition option_defs_us[] = {
+  {
+      "region",
+      "Console Region (Restart)",
+      NULL,
+      "Specify which region the system is from. 'PAL' is 50hz, 'NTSC' is 60hz.",
+      NULL,
+      "hacks",
+      {
+         { "auto", "Auto" },
+         { "NTSC", NULL },
+         { "PAL",  NULL },
+         { NULL, NULL },
+      },
+      "auto"
+   },
+   {
+      "frameskip",
+      "Frameskip",
+      NULL,
+      "Skip frames to avoid audio buffer under-run (crackling). Improves performance at the expense of visual smoothness.",
+      NULL,
+      "shit_hacks",
+      {
+         { "disabled", NULL },
+         { "auto",     "Auto" },
+         { "manual",   "Manual" },
+         { NULL, NULL },
+      },
+      "disabled"
+   },
+   { NULL, NULL, NULL, NULL, NULL, NULL, {{0}}, NULL },
+};
+
+
+struct retro_core_options_v2 options_us = {
+   option_cats_us,
+   option_defs_us
+};
+
+
 EXPORT void retro_set_environment(retro_environment_t cb)
 {
    environ_cb = cb;
+
+    static struct retro_variable variables[] = {
+      var_mrboom_teammode,
+      var_mrboom_nomonster,
+      var_mrboom_levelselect,
+      var_mrboom_aspect,
+      var_mrboom_musicvolume,
+      var_mrboom_sfxvolume,
+      var_empty,
+   };
+  // environ_cb(RETRO_ENVIRONMENT_SET_VARIABLES, variables);
+  environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_V2,
+            &options_us);
 }
 
 EXPORT void retro_deinit(void) {}
@@ -242,8 +323,7 @@ EXPORT bool retro_load_game(const struct retro_game_info *game)
 
    for (int i=0;i<7;i++)
    {
-    if(strcmp(ext,mix[i].ext)==0)
-    {
+    if(strcmp(ext,mix[i].ext)==0){
       wavfile = mix[i].func(buffer,lSize);
       break;
     }
@@ -253,7 +333,6 @@ EXPORT bool retro_load_game(const struct retro_game_info *game)
       free(buffer);
       return false;
    }
-   
    voice1 = audio_mixer_play(wavfile, true, 1.0, NULL, RESAMPLER_QUALITY_DONTCARE, NULL);
    return true;
 }
