@@ -144,6 +144,55 @@ EXPORT void retro_set_environment(retro_environment_t cb)
   // environ_cb(RETRO_ENVIRONMENT_SET_VARIABLES, variables);
   environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_V2,
             &options_us);
+
+enum gametype{
+   gba = 0,
+   wtf,
+   doom,
+   duke
+}
+
+static const struct retro_subsystem_memory_info gba_memory[] = {
+      { "srm", 0x101 },
+    };
+
+   static const struct retro_subsystem_memory_info nds_memory[] = {
+      { "sav", 0x102 },
+    };
+
+       static const struct retro_subsystem_rom_info testcase[] {
+      { "Test file 1", "wtf1", false, false, true, NULL, 0 },
+      { "Test file 2", "wtf2", false, false, true, NULL, 1 },
+      {}
+   };
+
+        static const struct retro_subsystem_rom_info testcase3[] {
+      { "Duke3D game file", "grp", false, false, true, NULL, 0 },
+      { "Duke3D usermap file", "map", false, false, true, NULL, 1 },
+      {}
+   };
+
+         static const struct retro_subsystem_rom_info testcase2[] {
+      { "Doom 1/2/Hexen/Heretic IWAD", "wad", false, false, true, NULL, 0 },
+      { "Doom 1/2/Hexen/Heretic user/PWAD", "wad", false, false, true, NULL, 1 },
+      {}
+   };
+
+   static const struct retro_subsystem_rom_info slot_1_2_roms[] {
+      { "NDS Rom (Slot 1)", "nds", false, false, true, nds_memory, 0 },
+      { "GBA Rom (Slot 2)", "gba", false, false, true, gba_memory, 1 },
+      {}
+   };
+
+   static const struct retro_subsystem_info subsystems[] = {
+        { "Slot 1/2 Boot", "gba", slot_1_2_roms, 2, gametype::gba },
+        { "Testcase", "wtf", testcase, 2, gametype::wtf },
+        { "Doom files", "wad", testcase3, 2, gametype::doom },
+        { "Duke3D files", "grp", testcase3, 2,gametype::duke },
+      {}
+    };
+
+   environ_cb(RETRO_ENVIRONMENT_SET_SUBSYSTEM_INFO, (void*)subsystems);
 }
 
 EXPORT void retro_deinit(void) {}
